@@ -18,8 +18,9 @@ impl<T: ClienteRepository> ClienteService<T> {
         correo: String,
         telefono: String,
         direccion: String,
+        id_clinica: Uuid,
     ) -> Result<Cliente, String> {
-        let cliente = Cliente::new(nombre, apellido, correo, telefono, direccion);
+        let cliente = Cliente::new(nombre, apellido, correo, telefono, direccion, id_clinica);
         self.repository.guardar(cliente.clone())?;
         Ok(cliente)
     }

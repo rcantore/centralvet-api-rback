@@ -9,6 +9,7 @@ pub struct Cliente {
     pub correo: String,
     pub telefono: String,
     pub direccion: String,
+    pub id_clinica: Uuid,
 }
 
 impl Cliente {
@@ -18,6 +19,7 @@ impl Cliente {
         correo: String,
         telefono: String,
         direccion: String,
+        id_clinica: Uuid,
     ) -> Self {
         Self {
             id: Uuid::new_v4(),
@@ -26,6 +28,7 @@ impl Cliente {
             correo,
             telefono,
             direccion,
+            id_clinica,
         }
     }
 }

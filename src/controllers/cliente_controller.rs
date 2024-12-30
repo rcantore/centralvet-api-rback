@@ -15,6 +15,7 @@ pub struct ClienteCreateDto {
     pub correo: String,
     pub telefono: String,
     pub direccion: String,
+    pub id_clinica: String,
 }
 
 type ClienteServiceType = Mutex<ClienteService<InMemoryClienteRepository>>;
@@ -49,6 +50,9 @@ pub async fn crear_cliente(
     cliente_dto: Json<ClienteCreateDto>,
     service: &State<ClienteServiceType>
 ) -> Result<Json<Cliente>, Status> {
+    let id_clinica = Uuid::parse_str(&cliente_dto.id_clinica)
+        .map_err(|_| Status::BadRequest)?;
+
     let result = service.lock()
         .map_err(|_| Status::InternalServerError)?
         .crear_cliente(
@@ -57,6 +61,7 @@ pub async fn crear_cliente(
             cliente_dto.correo.clone(),
             cliente_dto.telefono.clone(),
             cliente_dto.direccion.clone(),
+            id_clinica,
         );
 
     match result {
