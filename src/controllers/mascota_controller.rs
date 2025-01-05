@@ -88,3 +88,30 @@ pub async fn crear_mascota(
         Err(_) => Err(Status::InternalServerError),
     }
 }
+
+#[put("/mascotas/<id>", data = "<mascota_dto>")]
+pub async fn actualizar_mascota(
+    id: String,
+    mascota_dto: Json<MascotaCreateDto>,
+    service: &State<MascotaServiceType>
+) -> Result<Json<Mascota>, Status> {
+    let uuid = Uuid::parse_str(&id).map_err(|_| Status::BadRequest)?;
+    let id_cliente = Uuid::parse_str(&mascota_dto.id_cliente)
+        .map_err(|_| Status::BadRequest)?;
+
+    let result = service.lock()
+        .map_err(|_| Status::InternalServerError)?
+        .actualizar_mascota(
+            uuid,
+            mascota_dto.nombre.clone(),
+            mascota_dto.especie.clone(),
+            mascota_dto.raza.clone(),
+            mascota_dto.fecha_nacimiento,
+            id_cliente,
+        );
+
+    match result {
+        Ok(mascota) => Ok(Json(mascota)),
+        Err(_) => Err(Status::NotFound),
+    }
+}

@@ -74,3 +74,31 @@ pub async fn crear_cliente(
         Err(_) => Err(Status::InternalServerError),
     }
 }
+
+#[put("/clientes/<id>", data = "<cliente_dto>")]
+pub async fn actualizar_cliente(
+    id: String,
+    cliente_dto: Json<ClienteCreateDto>,
+    service: &State<ClienteServiceType>
+) -> Result<Json<Cliente>, Status> {
+    let uuid = Uuid::parse_str(&id).map_err(|_| Status::BadRequest)?;
+    let id_clinica = Uuid::parse_str(&cliente_dto.id_clinica)
+        .map_err(|_| Status::BadRequest)?;
+
+    let result = service.lock()
+        .map_err(|_| Status::InternalServerError)?
+        .actualizar_cliente(
+            uuid,
+            cliente_dto.nombre.clone(),
+            cliente_dto.apellido.clone(),
+            cliente_dto.correo.clone(),
+            cliente_dto.telefono.clone(),
+            cliente_dto.direccion.clone(),
+            id_clinica,
+        );
+
+    match result {
+        Ok(cliente) => Ok(Json(cliente)),
+        Err(_) => Err(Status::NotFound),
+    }
+}

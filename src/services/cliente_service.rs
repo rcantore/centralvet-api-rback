@@ -32,4 +32,31 @@ impl<T: ClienteRepository> ClienteService<T> {
     pub fn listar_clientes(&self) -> Vec<&Cliente> {
         self.repository.listar()
     }
+
+    pub fn actualizar_cliente(
+        &mut self,
+        id: Uuid,
+        nombre: String,
+        apellido: String,
+        correo: String,
+        telefono: String,
+        direccion: String,
+        id_clinica: Uuid,
+    ) -> Result<Cliente, String> {
+        let cliente = self.repository.obtener(id)
+            .ok_or_else(|| "El cliente no existe".to_string())?;
+
+        let cliente_actualizado = Cliente {
+            id: cliente.id,
+            nombre,
+            apellido,
+            correo,
+            telefono,
+            direccion,
+            id_clinica,
+        };
+
+        self.repository.guardar(cliente_actualizado.clone())?;
+        Ok(cliente_actualizado)
+    }
 }

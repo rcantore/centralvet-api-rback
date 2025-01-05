@@ -89,5 +89,7 @@ fn rocket() -> _ {
             crear_historia,
             listar_entradas,
             crear_entrada,
+            actualizar_cliente,
+            actualizar_mascota,
         ])
 }

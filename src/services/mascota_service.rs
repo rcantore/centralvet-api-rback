@@ -36,4 +36,29 @@ impl<T: MascotaRepository> MascotaService<T> {
     pub fn listar_mascotas_cliente(&self, id_cliente: Uuid) -> Vec<&Mascota> {
         self.repository.listar_por_cliente(id_cliente)
     }
+
+    pub fn actualizar_mascota(
+        &mut self,
+        id: Uuid,
+        nombre: String,
+        especie: String,
+        raza: String,
+        fecha_nacimiento: Option<NaiveDate>,
+        id_cliente: Uuid,
+    ) -> Result<Mascota, String> {
+        let mascota = self.repository.obtener(id)
+            .ok_or_else(|| "La mascota no existe".to_string())?;
+
+        let mascota_actualizada = Mascota {
+            id: mascota.id,
+            nombre,
+            especie,
+            raza,
+            fecha_nacimiento,
+            id_cliente,
+        };
+
+        self.repository.guardar(mascota_actualizada.clone())?;
+        Ok(mascota_actualizada)
+    }
 }
