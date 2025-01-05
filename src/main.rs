@@ -69,6 +69,7 @@ fn rocket() -> _ {
             listar_clinicas,
             obtener_clinica,
             crear_clinica,
+            actualizar_clinica,
             listar_clientes_clinica,
             // Clientes
             listar_clientes,

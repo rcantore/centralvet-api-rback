@@ -80,3 +80,27 @@ pub async fn listar_clientes_clinica(
     
     Ok(Json(clientes))
 }
+
+#[put("/clinicas/<id>", data = "<clinica_dto>")]
+pub async fn actualizar_clinica(
+    id: String,
+    clinica_dto: Json<ClinicaCreateDto>,
+    service: &State<ClinicaServiceType>
+) -> Result<Json<Clinica>, Status> {
+    let uuid = Uuid::parse_str(&id).map_err(|_| Status::BadRequest)?;
+    
+    let result = service.lock()
+        .map_err(|_| Status::InternalServerError)?
+        .actualizar_clinica(
+            uuid,
+            clinica_dto.nombre.clone(),
+            clinica_dto.direccion.clone(),
+            clinica_dto.telefono.clone(),
+            clinica_dto.correo.clone(),
+        );
+
+    match result {
+        Ok(clinica) => Ok(Json(clinica)),
+        Err(_) => Err(Status::NotFound),
+    }
+}

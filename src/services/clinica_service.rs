@@ -47,4 +47,27 @@ impl<T: ClinicaRepository> ClinicaService<T> {
         
         self.repository.agregar_cliente(id_clinica, cliente)
     }
+
+    pub fn actualizar_clinica(
+        &mut self,
+        id: Uuid,
+        nombre: String,
+        direccion: String,
+        telefono: String,
+        correo: String,
+    ) -> Result<Clinica, String> {
+        let clinica = self.repository.obtener(id)
+            .ok_or_else(|| "La clínica no existe".to_string())?;
+
+        let clinica_actualizada = Clinica {
+            id: clinica.id,
+            nombre,
+            direccion,
+            telefono,
+            correo,
+        };
+
+        self.repository.guardar(clinica_actualizada.clone())?;
+        Ok(clinica_actualizada)
+    }
 }
