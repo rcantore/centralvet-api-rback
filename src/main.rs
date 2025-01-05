@@ -25,6 +25,25 @@ use services::{
 };
 
 use std::sync::Mutex;
+use rocket::http::Method;
+use rocket_cors::{AllowedHeaders, AllowedOrigins, Cors, CorsOptions};
+
+fn make_cors() -> Cors {
+    CorsOptions {
+        allowed_origins: AllowedOrigins::all(), // Permite todos los orígenes
+        allowed_methods: vec![
+            Method::Get,
+            Method::Post,
+            Method::Put,
+            Method::Delete,
+        ].into_iter().map(From::from).collect(), // Métodos HTTP permitidos
+        allowed_headers: AllowedHeaders::all(), // Permite todos los headers
+        allow_credentials: true, // Permite credenciales
+        ..Default::default()
+    }
+    .to_cors()
+    .expect("Error configurando CORS")
+}
 
 #[launch]
 fn rocket() -> _ {
@@ -40,6 +59,7 @@ fn rocket() -> _ {
     let historia_clinica_service = HistoriaClinicaService::new(historia_clinica_repository);
 
     rocket::build()
+        .attach(make_cors()) // Agregamos el middleware CORS
         .manage(Mutex::new(clinica_service))
         .manage(Mutex::new(cliente_service))
         .manage(Mutex::new(mascota_service))
