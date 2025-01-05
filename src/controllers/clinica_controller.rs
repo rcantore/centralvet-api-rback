@@ -83,7 +83,7 @@ pub async fn listar_clientes_clinica(
 
 #[put("/clinicas/<id>", data = "<clinica_dto>")]
 pub async fn actualizar_clinica(
-    id: String,
+    id: &str,
     clinica_dto: Json<ClinicaCreateDto>,
     service: &State<ClinicaServiceType>
 ) -> Result<Json<Clinica>, Status> {

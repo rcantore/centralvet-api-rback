@@ -7,6 +7,7 @@ use crate::models::Cliente;
 use crate::services::ClienteService;
 use crate::repositories::cliente_repository::InMemoryClienteRepository;
 use std::sync::Mutex;
+use log::{error, info, warn};
 
 #[derive(Debug, Deserialize)]
 pub struct ClienteCreateDto {
@@ -36,7 +37,11 @@ pub async fn obtener_cliente(
     id: String,
     service: &State<ClienteServiceType>
 ) -> Result<Json<Cliente>, Status> {
-    let uuid = Uuid::parse_str(&id).map_err(|_| Status::BadRequest)?;
+    let uuid = Uuid::parse_str(&id)
+        .map_err(|err| {
+            error!("Error parsing UUID '{}': {}", id, err);
+            Status::BadRequest
+        })?;
     
     service.lock()
         .map_err(|_| Status::InternalServerError)?

@@ -27,6 +27,8 @@ use services::{
 use std::sync::Mutex;
 use rocket::http::Method;
 use rocket_cors::{AllowedHeaders, AllowedOrigins, Cors, CorsOptions};
+use log::info;
+use env_logger;
 
 fn make_cors() -> Cors {
     CorsOptions {
@@ -47,6 +49,7 @@ fn make_cors() -> Cors {
 
 #[launch]
 fn rocket() -> _ {
+    env_logger::init(); // Inicializa el logger
     // Inicializar servicios
     let clinica_repository = InMemoryClinicaRepository::new();
     let cliente_repository = InMemoryClienteRepository::new();
