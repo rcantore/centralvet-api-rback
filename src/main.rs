@@ -15,7 +15,7 @@ use repositories::{
     clinica_repository::InMemoryClinicaRepository,
     cliente_repository::InMemoryClienteRepository,
     mascota_repository::InMemoryMascotaRepository,
-    historia_clinica_repository::InMemoryHistoriaClinicaRepository,
+    historia_clinica_repository::InMemoryHistoriaClinicaRepository
 };
 use services::{
     ClinicaService,
@@ -51,7 +51,10 @@ fn make_cors() -> Cors {
 fn rocket() -> _ {
     env_logger::init(); // Inicializa el logger
     // Inicializar servicios
+    #[cfg(feature = "storage-memory")]
     let clinica_repository = InMemoryClinicaRepository::new();
+    #[cfg(feature = "storage-file")]
+    let clinica_repository = FileClinicaRepository::new();
     let cliente_repository = InMemoryClienteRepository::new();
     let mascota_repository = InMemoryMascotaRepository::new();
     let historia_clinica_repository = InMemoryHistoriaClinicaRepository::new();

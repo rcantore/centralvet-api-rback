@@ -13,3 +13,16 @@ rocket_cors = "0.6.0"
 log = "0.4"
 env_logger = "0.10"
 
+[profile.dev]
+opt-level = 0
+debug = true
+
+[profile.release]
+opt-level = 3
+debug = false
+
+[features]
+default = ["storage-memory"]
+storage-memory = []
+storage-file = []
+

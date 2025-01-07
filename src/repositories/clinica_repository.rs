@@ -62,4 +62,38 @@ impl ClinicaRepository for InMemoryClinicaRepository {
         self.clientes_por_clinica.entry(id_clinica).or_default().retain(|c| c.id != id_cliente);
         Ok(())
     }
+}
+
+#[cfg(feature = "storage-file")]
+pub struct FileClinicaRepository {
+    storage: FileRepository<Clinica>,
+}
+
+#[cfg(feature = "storage-file")]
+impl FileClinicaRepository {
+    pub fn new() -> Self {
+        Self {
+            storage: FileRepository::new("data/clinicas.json")
+        }
+    }
+}
+
+#[cfg(feature = "storage-file")]
+impl ClinicaRepository for FileClinicaRepository {
+    fn listar(&self) -> Vec<&Clinica> {
+        self.storage.load()
+            .unwrap_or_default()
+            .iter()
+            .collect()
+    }
+
+    fn guardar(&mut self, clinica: Clinica) -> Result<(), String> {
+        let mut clinicas = self.storage.load().unwrap_or_default();
+        if let Some(idx) = clinicas.iter().position(|c| c.id == clinica.id) {
+            clinicas[idx] = clinica;
+        } else {
+            clinicas.push(clinica);
+        }
+        self.storage.save(clinicas)
+    }
 } 
