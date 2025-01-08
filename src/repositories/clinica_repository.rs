@@ -2,6 +2,9 @@ use crate::models::{Clinica, Cliente};
 use std::collections::HashMap;
 use uuid::Uuid;
 
+#[cfg(feature = "storage-file")]
+use super::file_repository::FileRepository;
+
 pub trait ClinicaRepository {
     fn obtener(&self, id: Uuid) -> Option<&Clinica>;
     fn listar(&self) -> Vec<&Clinica>;
@@ -50,7 +53,7 @@ impl ClinicaRepository for InMemoryClinicaRepository {
     fn obtener_clientes(&self, id_clinica: Uuid) -> Vec<&Cliente> {
         self.clientes_por_clinica.get(&id_clinica)
             .map(|clientes| clientes.iter().collect())
-            .unwrap_or_else(Vec::new)
+            .unwrap_or_else(|| Vec::new())
     }
 
     fn agregar_cliente(&mut self, id_clinica: Uuid, cliente: Cliente) -> Result<(), String> {
@@ -67,13 +70,19 @@ impl ClinicaRepository for InMemoryClinicaRepository {
 #[cfg(feature = "storage-file")]
 pub struct FileClinicaRepository {
     storage: FileRepository<Clinica>,
+    cached_clinicas: Vec<Clinica>,
+    clientes_por_clinica: HashMap<Uuid, Vec<Cliente>>,
 }
 
 #[cfg(feature = "storage-file")]
 impl FileClinicaRepository {
     pub fn new() -> Self {
+        let storage = FileRepository::new("data/clinicas.json");
+        let cached_clinicas = storage.load().unwrap_or_default();
         Self {
-            storage: FileRepository::new("data/clinicas.json")
+            storage,
+            cached_clinicas,
+            clientes_por_clinica: HashMap::new(),
         }
     }
 }
@@ -81,19 +90,52 @@ impl FileClinicaRepository {
 #[cfg(feature = "storage-file")]
 impl ClinicaRepository for FileClinicaRepository {
     fn listar(&self) -> Vec<&Clinica> {
-        self.storage.load()
-            .unwrap_or_default()
-            .iter()
-            .collect()
+        self.cached_clinicas.iter().collect()
     }
 
     fn guardar(&mut self, clinica: Clinica) -> Result<(), String> {
-        let mut clinicas = self.storage.load().unwrap_or_default();
-        if let Some(idx) = clinicas.iter().position(|c| c.id == clinica.id) {
-            clinicas[idx] = clinica;
+        if let Some(idx) = self.cached_clinicas.iter().position(|c| c.id == clinica.id) {
+            self.cached_clinicas[idx] = clinica;
         } else {
-            clinicas.push(clinica);
+            self.cached_clinicas.push(clinica);
         }
-        self.storage.save(clinicas)
+        self.storage.save(self.cached_clinicas.clone())
+    }
+
+    fn obtener(&self, id: Uuid) -> Option<&Clinica> {
+        self.cached_clinicas.iter().find(|c| c.id == id)
+    }
+
+    fn eliminar(&mut self, id: Uuid) -> Result<(), String> {
+        self.cached_clinicas.retain(|c| c.id != id);
+        self.storage.save(self.cached_clinicas.clone())
+    }
+
+    fn obtener_clientes(&self, id_clinica: Uuid) -> Vec<&Cliente> {
+        self.clientes_por_clinica.get(&id_clinica)
+            .map(|clientes| clientes.iter().collect())
+            .unwrap_or_default()
+    }
+
+    fn agregar_cliente(&mut self, id_clinica: Uuid, cliente: Cliente) -> Result<(), String> {
+        if self.cached_clinicas.iter().find(|c| c.id == id_clinica).is_none() {
+            return Err("Clínica no encontrada".to_string());
+        }
+        
+        self.clientes_por_clinica.entry(id_clinica).or_default().push(cliente);
+        Ok(())
+    }
+
+    fn eliminar_cliente(&mut self, id_clinica: Uuid, id_cliente: Uuid) -> Result<(), String> {
+        if self.cached_clinicas.iter().find(|c| c.id == id_clinica).is_none() {
+            return Err("Clínica no encontrada".to_string());
+        }
+
+        self.clientes_por_clinica
+            .entry(id_clinica)
+            .or_default()
+            .retain(|c| c.id != id_cliente);
+        
+        Ok(())
     }
 } 

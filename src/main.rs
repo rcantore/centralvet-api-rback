@@ -11,8 +11,9 @@ use controllers::{
     mascota_controller::*,
     historia_clinica_controller::*,
 };
+
 use repositories::{
-    clinica_repository::InMemoryClinicaRepository,
+    clinica_repository::{InMemoryClinicaRepository, FileClinicaRepository},
     cliente_repository::InMemoryClienteRepository,
     mascota_repository::InMemoryMascotaRepository,
     historia_clinica_repository::InMemoryHistoriaClinicaRepository
