@@ -13,11 +13,13 @@ use controllers::{
 };
 
 use repositories::{
-    clinica_repository::{InMemoryClinicaRepository, FileClinicaRepository},
+    clinica_repository::InMemoryClinicaRepository,
     cliente_repository::InMemoryClienteRepository,
     mascota_repository::InMemoryMascotaRepository,
     historia_clinica_repository::InMemoryHistoriaClinicaRepository
 };
+#[cfg(feature = "storage-file")]
+use repositories::clinica_repository::FileClinicaRepository;
 use services::{
     ClinicaService,
     ClienteService,
